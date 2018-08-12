@@ -13,6 +13,8 @@ public class CombineUIScript : MonoBehaviour {
     public TextMeshProUGUI titlesDisplayText;
     public TMP_InputField inputField;
     public TextMeshProUGUI inputOverlay;
+    public TextMeshProUGUI redWarn, greenWarn;
+    public bool isRed, isGreen, isValid;
     CanvasGroup canvasGroup;
 
     BookScript book1, book2;
@@ -54,6 +56,9 @@ public class CombineUIScript : MonoBehaviour {
         return addedChar;
     }
     private void InputValueChanged() {
+        isRed = false;
+        isGreen = false;
+        isValid = false;
         int caret = inputField.caretPosition;
         string input = Regex.Replace(inputField.text, "<[^>]*>", "").ToUpper();
         int[] inputLetterCounts = new int[26];
@@ -68,6 +73,16 @@ public class CombineUIScript : MonoBehaviour {
         string colorTitle2 = GetColorTitle(book2.title.ToUpper(), inputLetterCounts);
         titlesDisplayText.text = colorTitle1 + "<color=\"white\">\n" + colorTitle2;
         inputOverlay.text = GetColorAnagram(input, inputLetterCounts);
+        bool isAllZero = true;
+        foreach (int i in inputLetterCounts) {
+            if (i != 0) {
+                isAllZero = false;
+                break;
+            }
+        }
+        redWarn.gameObject.SetActive(isRed);
+        greenWarn.gameObject.SetActive(isGreen);
+        isValid = !isRed && !isGreen && isAllZero;
     }
     private string GetColorTitle(string title, int[] letterCounts) {
         StringBuilder sb = new StringBuilder();
@@ -87,6 +102,7 @@ public class CombineUIScript : MonoBehaviour {
         return sb.ToString();
     }
     private string GetColorAnagram(string anagram, int[] letterCounts) {
+        // Grey out unavailable letters.
         StringBuilder sb = new StringBuilder();
         for (int i = anagram.Length - 1; i >= 0; i--) {
             char c = anagram[i];
@@ -102,10 +118,42 @@ public class CombineUIScript : MonoBehaviour {
                 sb.Insert(0, "<color=\"white\">");
             }
         }
-        return sb.ToString();
+        string tagged = sb.ToString();
+
+        // Highlight invalid and already-used words.
+        HashSet<string> usedWords = new HashSet<string>();
+        Regex nonAlpha = new Regex("[^A-Z]");
+        foreach (string usedWord in (book1.title + " " + book2.title).Split(' ')) {
+            usedWords.Add(nonAlpha.Replace(usedWord, ""));
+        }
+        string[] rawTokens = inputField.text.Split(' ');
+        string[] coloredTokens = tagged.Split(' ');
+        Debug.Assert(rawTokens.Length == coloredTokens.Length);
+        string[] finishedTokens = new string[rawTokens.Length];
+        for (int i = 0; i < rawTokens.Length; i++) {
+            string word = rawTokens[i];
+            if (word.Length == 0) {
+                continue;
+            }
+            string alphaWord = nonAlpha.Replace(word, "");
+            if (!gameScript.dictionaryScript.IsRealWord(alphaWord)) {
+                finishedTokens[i] = "<mark=#ff000020>" + coloredTokens[i] + "</mark>";
+                isRed = true;
+            } else if (usedWords.Contains(alphaWord)) {
+                finishedTokens[i] = "<mark=#ffff0020>" + coloredTokens[i] + "</mark>";
+                isGreen = true;
+            } else {
+                finishedTokens[i] = coloredTokens[i];
+                usedWords.Add(alphaWord);
+            }
+        }
+        return string.Join(" ", finishedTokens);
     }
 
     public void SetBooks(BookScript book1, BookScript book2) {
+        isRed = false;
+        isGreen = false;
+        isValid = false;
         this.book1 = book1;
         this.book2 = book2;
         titlesDisplayText.text = book1.title.ToUpper() + '\n' + book2.title.ToUpper();

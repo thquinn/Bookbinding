@@ -35,7 +35,7 @@ public class GameScript : MonoBehaviour {
         GameObject book = Instantiate(bookPrefab);
         book.transform.Translate(rightX, 0, 0);
         BookScript bookScript = book.GetComponent<BookScript>();
-        bookScript.SetTitle(dictionaryScript.RandomWord());
+        bookScript.SetTitle(dictionaryScript.RandomTitle());
         bookScripts.Add(bookScript);
         float width = Random.Range(1, 1.5f);
         bookScript.SetScale(width, Random.Range(.66f, .9f));
@@ -95,7 +95,7 @@ public class GameScript : MonoBehaviour {
         } else { // Combine mode.
             if (Input.GetButtonDown("Cancel")) {
                 combining = false;
-            } else if (Input.GetButtonDown("Submit")) {
+            } else if (Input.GetButtonDown("Submit") && combineUI.isValid) {
                 float shift = bookScripts[selected].model.transform.localScale.x + bookScripts[combineTarget].model.transform.localScale.x;
                 for (int i = Mathf.Max(selected, combineTarget) + 1; i < bookScripts.Count; i++) {
                     bookScripts[i].Move(-shift, false);

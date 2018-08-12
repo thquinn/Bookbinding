@@ -50,7 +50,7 @@ public class BookScript : MonoBehaviour {
         TMP_FontAsset font = fonts[Random.Range(0, fonts.Length)];
         TextMeshProUGUI ugui = textMesh.GetComponent<TextMeshProUGUI>();
         bool canBeAllCaps = !noAllCapsFontNames.Contains(font.name);
-        string capitalizedTitle = (Random.value < .25 && canBeAllCaps) ? title.ToUpper() : textInfo.ToTitleCase(title.ToLower());
+        string capitalizedTitle = (Random.value < .166 && canBeAllCaps) ? title.ToUpper() : textInfo.ToTitleCase(title.ToLower());
         ugui.SetText(capitalizedTitle);
         ugui.font = font;
     }
