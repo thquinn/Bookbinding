@@ -7,12 +7,13 @@ using UnityEngine;
 
 public class BookScript : MonoBehaviour {
     public static TMP_FontAsset[] fonts;
-    static TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
     static HashSet<string> noAllCapsFontNames = new HashSet<string>() { "AlexBrush-Regular SDF", "Allura-Regular SDF", "Arizonia-Regular SDF", "DancingScript-Regular SDF", "GrandHotel-Regular SDF", "GreatVibes-Regular SDF", "JosephinSans-Regular SDF", "Lobster_1", "Pacifico SDF", "Sofia-Regular SDF", "Titilium-Regular SDF" };
-    public GameObject tweenParent, model, textMesh;
+    static float TILT_TWEEN_SPEED = 0.5f;
+    public GameObject tiltParent, tweenParent, model, textMesh;
     public AudioSource audioSource;
     public AudioClip[] swapClips, thumpClips;
     public string title;
+    public float tilt;
     bool ready;
     float xTweenStart, xTweenTime = 1, xTweenSpeed;
     bool zTweenFront;
@@ -25,8 +26,29 @@ public class BookScript : MonoBehaviour {
     }
 	
 	void Update () {
+        // Tilt.
+        if (tilt >= GameScript.MAX_TILT) { // Drop the book; the game is over.
+            tilt = Mathf.Min(90, tilt + 3);
+        }
+        float actualTilt = tiltParent.transform.localRotation.eulerAngles.z;
+        if (actualTilt != tilt) {
+            float zRot = Mathf.Abs(tilt - actualTilt) < .5f ? tilt : actualTilt + (tilt - actualTilt) * TILT_TWEEN_SPEED;
+            float zRadians = zRot * Mathf.Deg2Rad;
+            float zSin = Mathf.Sin(zRadians);
+            float z2Sin = Mathf.Sin(zRadians * 2);
+            float zCos = Mathf.Cos(zRadians);
+            float width = model.transform.localScale.x, height = model.transform.localScale.y * 8;
+            float xOff = (height / 2 - width / 2) * zSin + (height / 20) * z2Sin;
+            float yOff = (width / 2 - height / 2) * zSin + (height / 5) * z2Sin;
+            tiltParent.transform.localPosition = new Vector3(xOff, yOff, 0);
+            tiltParent.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, zRot));
+        }
+        // Tween.
         if (xTweenTime < 1) {
             xTweenTime = Mathf.Min(1, xTweenTime + xTweenSpeed);
+            // DEBUG
+            //xTweenTime = 1;
+            // END DEBUG
             if (!ready && xTweenTime >= .9f) {
                 audioSource.PlayOneShot(thumpClips[Random.Range(0, thumpClips.Length)]);
                 ready = true;
@@ -41,7 +63,7 @@ public class BookScript : MonoBehaviour {
             float xRot = zTweenFront ? z * -3 : 0;
             z *= zTweenFront ? -5f : 2.5f;
             tweenParent.transform.localPosition = new Vector3(x, y, z);
-            tweenParent.transform.localRotation = Quaternion.Euler(xRot, 0, 0);
+            tweenParent.transform.localRotation = Quaternion.Euler(new Vector3(xRot, 0, 0));
         }
 	}
 

@@ -6,7 +6,7 @@ using UnityEngine;
 public class SwapUIScript : MonoBehaviour {
     static float FADE_SPEED = .2f;
     public GameScript gameScript;
-    public TextMeshProUGUI titleDisplayText;
+    public TextMeshProUGUI titleDisplayText, scorePoints;
     public GameObject selector;
     CanvasGroup canvasGroup;
 
@@ -17,7 +17,7 @@ public class SwapUIScript : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        float targetAlpha = gameScript.IsCombining() ? 0 : 1;
+        float targetAlpha = (gameScript.IsCombining() || gameScript.gameOver) ? 0 : 1;
         if (gameScript.FirstIsReady() && canvasGroup.alpha != targetAlpha) {
             if (Mathf.Abs(canvasGroup.alpha - targetAlpha) <= FADE_SPEED) {
                 canvasGroup.alpha = targetAlpha;
@@ -36,5 +36,9 @@ public class SwapUIScript : MonoBehaviour {
         selector.transform.Translate((selectorTargetX - selector.transform.position.x) * .5f, 0, 0);
 
         titleDisplayText.SetText(gameScript.GetSelectedTitle());
+    }
+
+    public void SetScore(float iq) {
+        scorePoints.text = iq.ToString("n2") + " IQ";
     }
 }

@@ -86,9 +86,9 @@ public class DictionaryScript : MonoBehaviour {
         return part;
     }
 
-    public string RandomTitle() {
+    public string RandomTitle(int maxLength) {
         string title = "";
-        while (title.Length == 0 || title.Length > 20) {
+        while (title.Length == 0 || title.Length > maxLength) {
             int selector = Random.Range(0, totalTitleWeight);
             string structure = "SOMETHING BAD HAPPENED!";
             foreach (TitleStructure ts in titleStructures) {

@@ -2,24 +2,29 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameScript : MonoBehaviour {
+    private const int NUM_STARTING_BOOKS = 4;
+    private const float STARTING_SPEED = 1f / (40 * 60); // 1 book per 40 seconds.
+    private const float SPEED_MULTIPLIER = 0.05f; // Doubles starting speed after 20 books spawned.
+    private const float MAX_RIGHT_X = 5.75f;
+    public const float TILT_START = 20, MAX_TILT = 45, TILT_SPEED = .015f;
+
     public GameObject bookPrefab;
     public DictionaryScript dictionaryScript;
     public SwapUIScript swapUI;
     public CombineUIScript combineUI;
     List<BookScript> bookScripts;
     int selected, combineTarget;
+    bool leftLastFrame = false, rightLastFrame = false;
     bool combining = false;
     float rightX;
     public float bookTimer = 0;
     int booksSpawned = 0;
-
-    private const int NUM_STARTING_BOOKS = 4;
-    private const float STARTING_SPEED = 1f / (40 * 60); // 1 book per 40 seconds.
-    private const float SPEED_MULTIPLIER = 0.05f; // Doubles starting speed after 20 books spawned.
-
-    bool leftLastFrame = false, rightLastFrame = false;
+    public float score = 100;
+    float tilt = TILT_START;
+    public bool gameOver = false;
 
 	void Start () {
         if (BookScript.fonts == null) {
@@ -39,7 +44,7 @@ public class GameScript : MonoBehaviour {
         GameObject book = Instantiate(bookPrefab);
         book.transform.Translate(rightX, 0, 0);
         BookScript bookScript = book.GetComponent<BookScript>();
-        bookScript.SetTitle(dictionaryScript.RandomTitle());
+        bookScript.SetTitle(dictionaryScript.RandomTitle(14 + booksSpawned / 2));
         bookScripts.Add(bookScript);
         float width = Random.Range(1, 1.5f);
         bookScript.SetScale(width, Random.Range(.66f, .9f));
@@ -50,15 +55,35 @@ public class GameScript : MonoBehaviour {
 
     void Update() {
         // Game logic.
-        float timerSpeed = STARTING_SPEED * (1 + SPEED_MULTIPLIER * booksSpawned);
-        bookTimer += timerSpeed;
-        if (bookTimer >= 1) {
-            bookTimer -= 1;
-            AddBook(0);
-            booksSpawned++;
+        if (gameOver && Input.GetButtonDown("Restart")) {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-        if (!combining && Input.GetButtonDown("Submit")) {
-            AddBook(0);
+        if (!gameOver) {
+            if (rightX <= MAX_RIGHT_X) {
+                float timerSpeed = STARTING_SPEED * (1 + SPEED_MULTIPLIER * booksSpawned);
+                bookTimer += timerSpeed;
+                if (bookTimer >= 1) {
+                    bookTimer -= 1;
+                    AddBook(0);
+                    booksSpawned++;
+                }
+            }
+            if (rightX > MAX_RIGHT_X) {
+                tilt += TILT_SPEED;
+                bookScripts[bookScripts.Count - 1].tilt = tilt;
+                if (tilt >= MAX_TILT) {
+                    gameOver = true;
+                    combining = false;
+                }
+            }
+            else {
+                foreach (BookScript bs in bookScripts) {
+                    bs.tilt = 0;
+                }
+            }
+            if (!combining && Input.GetButtonDown("Submit") && rightX < MAX_RIGHT_X) {
+                AddBook(0);
+            }
         }
 
         // Swap mode.
@@ -84,6 +109,11 @@ public class GameScript : MonoBehaviour {
             }
             else {
                 leftLastFrame = false;
+            }
+            if (Input.GetButton("Home")) {
+                selected = 0;
+            } else if (Input.GetButton("End")) {
+                selected = bookScripts.Count - 1;
             }
             if (Input.GetAxisRaw("Horizontal") > 0) {
                 if (!rightLastFrame && selected < maxSelect) {
@@ -121,6 +151,8 @@ public class GameScript : MonoBehaviour {
                 }
                 selected = Mathf.Max(0, Mathf.Min(selected, combineTarget) - 1);
                 combining = false;
+                score += combineUI.score;
+                swapUI.SetScore(score);
             }
         }
     }

@@ -6,21 +6,31 @@ using UnityEngine;
 
 public class CombineUIScript : MonoBehaviour {
     static float FADE_SPEED = .2f;
+    static int[] LETTER_POINTS = new int[] { 1, 2, 2, 2, 1, 3, 2, 2, 1, 14, 4, 2, 2, 1, 1, 2, 14, 1, 1, 1, 2, 3, 4, 8, 2, 6 };
+    static float LENGTH_POINTS_EXPONENT = 1.33f;
+    static float POINTS_MAX_RANDOM_MULTIPLIER = .125f;
+    static float POINTS_MULTIPLIER = .25f;
     public GameScript gameScript;
     public DictionaryScript dictionaryScript;
     public TextMeshProUGUI titlesDisplayText;
     public TMP_InputField inputField;
     public TextMeshProUGUI inputOverlay;
     public TextMeshProUGUI redWarn, greenWarn;
+    public TextMeshProUGUI scoreWords, scorePoints;
     public AudioSource audioSource;
     public AudioClip[] clickClips;
     public bool isRed, isGreen, isValid;
+    public float score;
+    private System.Security.Cryptography.MD5 md5;
+    List<string> validWords;
     CanvasGroup canvasGroup;
 
     BookScript book1, book2;
 
     // Use this for initialization
     void Start () {
+        md5 = System.Security.Cryptography.MD5.Create();
+        validWords = new List<string>();
         canvasGroup = GetComponent<CanvasGroup>();
         inputField.onValidateInput += ValidateInput;
         inputField.onValueChanged.AddListener(delegate { InputValueChanged(); });
@@ -70,6 +80,8 @@ public class CombineUIScript : MonoBehaviour {
         isRed = false;
         isGreen = false;
         isValid = false;
+        score = 0;
+        validWords.Clear();
         int caret = inputField.caretPosition;
         string input = Regex.Replace(inputField.text, "<[^>]*>", "").ToUpper();
         int[] inputLetterCounts = new int[26];
@@ -93,6 +105,7 @@ public class CombineUIScript : MonoBehaviour {
         }
         redWarn.gameObject.SetActive(isRed);
         greenWarn.gameObject.SetActive(isGreen);
+        CalculateAndShowScore();
         isValid = !isRed && !isGreen && isAllZero;
         audioSource.PlayOneShot(clickClips[Random.Range(0, clickClips.Length)]);
     }
@@ -158,6 +171,7 @@ public class CombineUIScript : MonoBehaviour {
             } else {
                 finishedTokens[i] = coloredTokens[i];
                 usedWords.Add(alphaWord);
+                validWords.Add(alphaWord);
             }
         }
         return string.Join(" ", finishedTokens);
@@ -169,20 +183,57 @@ public class CombineUIScript : MonoBehaviour {
         if (usedWords.Contains(word)) {
             return true;
         }
-        foreach (string titleWord in titleWords) {
-            string wordStart = word.Substring(0, Mathf.Min(word.Length, 7));
-            string wordEnd = word.Substring(word.Length - Mathf.Min(word.Length, 7));
-            if (titleWord.StartsWith(wordStart) || titleWord.EndsWith(wordEnd)) {
-                return true;
+        if (word.Length >= 4) {
+            foreach (string titleWord in titleWords) {
+                string wordStart = word.Substring(0, Mathf.Min(word.Length, 7));
+                string wordEnd = word.Substring(word.Length - Mathf.Min(word.Length, 7));
+                if (titleWord.StartsWith(wordStart) || titleWord.EndsWith(wordEnd)) {
+                    return true;
+                }
             }
         }
         return false;
+    }
+    void CalculateAndShowScore() {
+        if (validWords.Count == 0) {
+            scoreWords.text = "";
+            scorePoints.text = "";
+            return;
+        }
+        List<string> points = new List<string>();
+        foreach (string word in validWords) {
+            float p = 0;
+            foreach (char c in word) {
+                p += LETTER_POINTS[(int)(c - 'A')];
+            }
+            p *= Mathf.Pow(word.Length, LENGTH_POINTS_EXPONENT) / word.Length;
+            // RANDOM
+            byte[] hashBytes = md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(word));
+            float f = 0;
+            for (int i = 0; i < hashBytes.Length; i++) {
+                float percent = hashBytes[i] / (float)byte.MaxValue;
+                f += percent / Mathf.Pow(2, i + 1);
+            }
+            Debug.Log(f);
+            p *= 1 + f * POINTS_MAX_RANDOM_MULTIPLIER;
+            // RANDOM
+            p *= POINTS_MULTIPLIER;
+            p = Mathf.Round(p * 100) / 100f;
+            points.Add(p.ToString("n2"));
+            score += p;
+        }
+        scoreWords.text = string.Join("\n", validWords.ToArray()) + "\nTOTAL";
+        scorePoints.text = string.Join("\n", points.ToArray()) + "\n" + score.ToString("n2");
     }
 
     public void SetBooks(BookScript book1, BookScript book2) {
         isRed = false;
         isGreen = false;
         isValid = false;
+        score = 0;
+        validWords.Clear();
+        scoreWords.text = "";
+        scorePoints.text = "";
         this.book1 = book1;
         this.book2 = book2;
         titlesDisplayText.text = book1.title.ToUpper() + '\n' + book2.title.ToUpper();
