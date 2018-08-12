@@ -60,7 +60,7 @@ public class BookScript : MonoBehaviour {
 
         RectTransform rectTransform = textMesh.GetComponent<RectTransform>();
         float canvasWidth = rectTransform.sizeDelta.x * y;
-        canvasWidth *= Random.Range(.6f, 1f);
+        canvasWidth *= Random.Range(.4f, 1f);
         rectTransform.sizeDelta = new Vector2(canvasWidth, rectTransform.sizeDelta.y);
         textMesh.GetComponent<RectTransform>().sizeDelta = rectTransform.sizeDelta;
     }

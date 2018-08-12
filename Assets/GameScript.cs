@@ -133,6 +133,9 @@ public class GameScript : MonoBehaviour {
         bookScripts[two] = bookOne;
     }
 
+    public bool FirstIsReady() {
+        return bookScripts[0].IsReady();
+    }
     public bool IsCombining() {
         return combining;
     }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MusicScript : MonoBehaviour {
     public AudioSource audioSource;
-    private const float FADE_SPEED = .0025f, MAX_VOL = .25f;
+    private const float FADE_SPEED = .0005f, MAX_VOL = .25f;
 
 	// Use this for initialization
 	void Start () {

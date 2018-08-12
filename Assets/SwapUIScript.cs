@@ -18,7 +18,7 @@ public class SwapUIScript : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         float targetAlpha = gameScript.IsCombining() ? 0 : 1;
-        if (canvasGroup.alpha != targetAlpha) {
+        if (gameScript.FirstIsReady() && canvasGroup.alpha != targetAlpha) {
             if (Mathf.Abs(canvasGroup.alpha - targetAlpha) <= FADE_SPEED) {
                 canvasGroup.alpha = targetAlpha;
             }
