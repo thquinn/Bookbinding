@@ -6,7 +6,7 @@ using UnityEngine;
 public class SwapUIScript : MonoBehaviour {
     static float FADE_SPEED = .2f;
     public GameScript gameScript;
-    public TextMeshProUGUI titleDisplayText, scorePoints;
+    public TextMeshProUGUI titleDisplayText, scorePoints, help;
     public GameObject selector;
     CanvasGroup canvasGroup;
 
@@ -36,6 +36,10 @@ public class SwapUIScript : MonoBehaviour {
         selector.transform.Translate((selectorTargetX - selector.transform.position.x) * .5f, 0, 0);
 
         titleDisplayText.SetText(gameScript.GetSelectedTitle());
+
+        if (gameScript.score > 100) {
+            help.enabled = false;
+        }
     }
 
     public void SetScore(float iq) {

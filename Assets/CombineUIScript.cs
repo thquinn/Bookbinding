@@ -14,6 +14,7 @@ public class CombineUIScript : MonoBehaviour {
     public DictionaryScript dictionaryScript;
     public TextMeshProUGUI titlesDisplayText;
     public TMP_InputField inputField;
+    public TextMeshProUGUI help;
     public TextMeshProUGUI inputOverlay;
     public TextMeshProUGUI redWarn, greenWarn;
     public TextMeshProUGUI scoreWords, scorePoints;
@@ -57,10 +58,14 @@ public class CombineUIScript : MonoBehaviour {
         } else {
             inputField.DeactivateInputField();
         }
+
+        if (gameScript.score > 100) {
+            help.enabled = false;
+        }
     }
 
     private char ValidateInput(string text, int charIndex, char addedChar) {
-        if ("<>{}[]|".Contains(addedChar.ToString())) {
+        if ("<>{}[]|#".Contains(addedChar.ToString())) {
             return '\0';
         }
         if (addedChar == ' ') {
@@ -80,7 +85,6 @@ public class CombineUIScript : MonoBehaviour {
     private void InputValueChanged() {
         isRed = false;
         isGreen = false;
-        isValid = false;
         score = 0;
         validWords.Clear();
         int caret = inputField.caretPosition;
@@ -108,7 +112,7 @@ public class CombineUIScript : MonoBehaviour {
         greenWarn.gameObject.SetActive(isGreen);
         anagram = inputField.text;
         CalculateAndShowScore();
-        isValid = !isRed && !isGreen && isAllZero;
+        isValid = !isRed && !isGreen && isAllZero && !inputOverlay.text.Contains("#808080");
         audioSource.PlayOneShot(clickClips[Random.Range(0, clickClips.Length)]);
     }
     private string GetColorTitle(string title, int[] letterCounts) {

@@ -922,6 +922,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 35cc63ac4417bfb4cab890bb36ceacb8, type: 3}
   - {fileID: 8300000, guid: 742ccdfbe501dbd46befdd4799f6dfcc, type: 3}
   title: 
+  tilt: 0
+  isDead: 0
 --- !u!136 &136372121104762590
 CapsuleCollider:
   m_ObjectHideFlags: 1
@@ -961,7 +963,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1448499747091360}
   m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: -0.2500999}
+  m_LocalPosition: {x: 0, y: 0, z: -0.26}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4913409809732844}

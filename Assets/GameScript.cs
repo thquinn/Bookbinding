@@ -25,6 +25,7 @@ public class GameScript : MonoBehaviour {
     public float score = 100;
     float tilt = TILT_START;
     public bool gameOver = false;
+    public FadeUIScript fadeUIScript;
 
 	void Start () {
         if (BookScript.fonts == null) {
@@ -67,7 +68,7 @@ public class GameScript : MonoBehaviour {
     void Update() {
         // Game logic.
         if (gameOver && Input.GetButtonDown("Restart")) {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            fadeUIScript.fadeOut = true;
         }
         if (!gameOver) {
             if (rightX <= MAX_RIGHT_X) {
