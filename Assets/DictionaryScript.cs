@@ -45,7 +45,17 @@ public class DictionaryScript : MonoBehaviour {
     }
 
     public string RandomWord() {
-        return dictionaryArray[Random.Range(0, dictionaryArray.Length)];
+        int sum = 0;
+        foreach (List<string> list in partsOfSpeech.Values) {
+            sum += list.Count;
+        }
+        int selector = Random.Range(0, sum);
+        foreach (KeyValuePair<string, List<string>> kvp in partsOfSpeech) {
+            if (selector < kvp.Value.Count) {
+                return kvp.Value[Random.Range(0, kvp.Value.Count)];
+            }
+        }
+        return "SOMETHING NOT GOOD HAPPENED!";
     }
     public string RandomNumberWord() {
         int r = Random.Range(0, 100);

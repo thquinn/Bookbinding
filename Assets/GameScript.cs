@@ -12,8 +12,12 @@ public class GameScript : MonoBehaviour {
     int selected, combineTarget;
     bool combining = false;
     float rightX;
+    public float bookTimer = 0;
+    int booksSpawned = 0;
 
     private const int NUM_STARTING_BOOKS = 4;
+    private const float STARTING_SPEED = 1f / (40 * 60); // 1 book per 40 seconds.
+    private const float SPEED_MULTIPLIER = 0.05f; // Doubles starting speed after 20 books spawned.
 
     bool leftLastFrame = false, rightLastFrame = false;
 
@@ -46,6 +50,13 @@ public class GameScript : MonoBehaviour {
 
     void Update() {
         // Game logic.
+        float timerSpeed = STARTING_SPEED * (1 + SPEED_MULTIPLIER * booksSpawned);
+        bookTimer += timerSpeed;
+        if (bookTimer >= 1) {
+            bookTimer -= 1;
+            AddBook(0);
+            booksSpawned++;
+        }
         if (!combining && Input.GetButtonDown("Submit")) {
             AddBook(0);
         }
@@ -108,6 +119,7 @@ public class GameScript : MonoBehaviour {
                 while (bookScripts.Count < 2) {
                     AddBook(0);
                 }
+                selected = Mathf.Max(0, Mathf.Min(selected, combineTarget) - 1);
                 combining = false;
             }
         }
@@ -125,10 +137,12 @@ public class GameScript : MonoBehaviour {
         return combining;
     }
     public float GetSelectorX() {
-        float x = -7;
-        for (int i = 0; i < selected; i++) {
+        float x = -7.5f;
+        for (int i = 0; i <= selected; i++) {
+            if (i > 0) {
+                x += bookScripts[i - 1].model.transform.localScale.x / 2;
+            }
             x += bookScripts[i].model.transform.localScale.x / 2;
-            x += bookScripts[i + 1].model.transform.localScale.x / 2;
         }
         return x;
     }

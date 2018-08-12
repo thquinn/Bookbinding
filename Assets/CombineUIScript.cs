@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -14,6 +12,8 @@ public class CombineUIScript : MonoBehaviour {
     public TMP_InputField inputField;
     public TextMeshProUGUI inputOverlay;
     public TextMeshProUGUI redWarn, greenWarn;
+    public AudioSource audioSource;
+    public AudioClip[] clickClips;
     public bool isRed, isGreen, isValid;
     CanvasGroup canvasGroup;
 
@@ -49,10 +49,21 @@ public class CombineUIScript : MonoBehaviour {
     }
 
     private char ValidateInput(string text, int charIndex, char addedChar) {
-        if (addedChar == '<' || addedChar == '>') {
+        if ("<>{}[]|".Contains(addedChar.ToString())) {
             return '\0';
         }
-        addedChar = Char.ToUpper(addedChar);
+        if (addedChar == ' ') {
+            if (text.Length == 0) {
+                return '\0';
+            }
+            if (charIndex > 0 && text[charIndex - 1] == ' ') {
+                return '\0';
+            }
+            if (charIndex < text.Length && text[charIndex] == ' ') {
+                return '\0';
+            }
+        }
+        addedChar = System.Char.ToUpper(addedChar);
         return addedChar;
     }
     private void InputValueChanged() {
@@ -83,6 +94,7 @@ public class CombineUIScript : MonoBehaviour {
         redWarn.gameObject.SetActive(isRed);
         greenWarn.gameObject.SetActive(isGreen);
         isValid = !isRed && !isGreen && isAllZero;
+        audioSource.PlayOneShot(clickClips[Random.Range(0, clickClips.Length)]);
     }
     private string GetColorTitle(string title, int[] letterCounts) {
         StringBuilder sb = new StringBuilder();
@@ -121,15 +133,16 @@ public class CombineUIScript : MonoBehaviour {
         string tagged = sb.ToString();
 
         // Highlight invalid and already-used words.
-        HashSet<string> usedWords = new HashSet<string>();
+        HashSet<string> titleWords = new HashSet<string>();
         Regex nonAlpha = new Regex("[^A-Z]");
         foreach (string usedWord in (book1.title + " " + book2.title).Split(' ')) {
-            usedWords.Add(nonAlpha.Replace(usedWord, ""));
+            titleWords.Add(nonAlpha.Replace(usedWord, ""));
         }
         string[] rawTokens = inputField.text.Split(' ');
         string[] coloredTokens = tagged.Split(' ');
         Debug.Assert(rawTokens.Length == coloredTokens.Length);
         string[] finishedTokens = new string[rawTokens.Length];
+        HashSet<string> usedWords = new HashSet<string>();
         for (int i = 0; i < rawTokens.Length; i++) {
             string word = rawTokens[i];
             if (word.Length == 0) {
@@ -139,7 +152,7 @@ public class CombineUIScript : MonoBehaviour {
             if (!gameScript.dictionaryScript.IsRealWord(alphaWord)) {
                 finishedTokens[i] = "<mark=#ff000020>" + coloredTokens[i] + "</mark>";
                 isRed = true;
-            } else if (usedWords.Contains(alphaWord)) {
+            } else if (IsOrIsPartOfUsedWord(titleWords, usedWords, alphaWord)) {
                 finishedTokens[i] = "<mark=#ffff0020>" + coloredTokens[i] + "</mark>";
                 isGreen = true;
             } else {
@@ -148,6 +161,22 @@ public class CombineUIScript : MonoBehaviour {
             }
         }
         return string.Join(" ", finishedTokens);
+    }
+    private bool IsOrIsPartOfUsedWord(HashSet<string> titleWords, HashSet<string> usedWords, string word) {
+        if (titleWords.Contains(word)) {
+            return true;
+        }
+        if (usedWords.Contains(word)) {
+            return true;
+        }
+        foreach (string titleWord in titleWords) {
+            string wordStart = word.Substring(0, Mathf.Min(word.Length, 7));
+            string wordEnd = word.Substring(word.Length - Mathf.Min(word.Length, 7));
+            if (titleWord.StartsWith(wordStart) || titleWord.EndsWith(wordEnd)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void SetBooks(BookScript book1, BookScript book2) {

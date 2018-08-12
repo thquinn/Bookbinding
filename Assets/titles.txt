@@ -12,26 +12,28 @@
 33	%p AND %p
 33	%V %N
 33	%P %N
-33	%# %p
-33	%# %A %p
 33	THE %N
 20	%P %V
-20	%N OF THE %N
-20	%p OF THE %p
-20	%N OF THE %p
-20	%p OF THE %N
 15	A %N
 15	%C %N
+12	%N OF THE %N
+12	%p OF THE %p
+12	%N OF THE %p
+12	%p OF THE %N
 10	%D %N AND %D %N
 10	%v %V
 10	%V %v
 10	%A %C %N
+10	%# %p
+10	%# %A %p
 5	%N'S %N
 5	THE %N'S %N
 5	%?, %?
 5	TO %t %N
 5	TO %t %p
+5	%N-%N
 2	%!!
 1	%?, %?, %?
 1	%!, A %N!
 1	%!, %?
+1	%?!
