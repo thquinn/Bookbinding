@@ -24,6 +24,7 @@ public class CombineUIScript : MonoBehaviour {
     private System.Security.Cryptography.MD5 md5;
     List<string> validWords;
     CanvasGroup canvasGroup;
+    public string anagram;
 
     BookScript book1, book2;
 
@@ -105,6 +106,7 @@ public class CombineUIScript : MonoBehaviour {
         }
         redWarn.gameObject.SetActive(isRed);
         greenWarn.gameObject.SetActive(isGreen);
+        anagram = inputField.text;
         CalculateAndShowScore();
         isValid = !isRed && !isGreen && isAllZero;
         audioSource.PlayOneShot(clickClips[Random.Range(0, clickClips.Length)]);
@@ -214,7 +216,6 @@ public class CombineUIScript : MonoBehaviour {
                 float percent = hashBytes[i] / (float)byte.MaxValue;
                 f += percent / Mathf.Pow(2, i + 1);
             }
-            Debug.Log(f);
             p *= 1 + f * POINTS_MAX_RANDOM_MULTIPLIER;
             // RANDOM
             p *= POINTS_MULTIPLIER;

@@ -52,6 +52,17 @@ public class GameScript : MonoBehaviour {
         bookScript.SpawnTween(spawnTweenOffset);
         rightX += width;
     }
+    void AddCombinedBook(string title, BookScript one, BookScript two) {
+        GameObject book = Instantiate(bookPrefab);
+        float x = (one.transform.localPosition.x - one.model.transform.localScale.x / 2 + two.transform.localPosition.x - two.model.transform.localScale.x / 2) / 2;
+        book.transform.Translate(x, 0, 0);
+        BookScript bookScript = book.GetComponent<BookScript>();
+        bookScript.SetTitle(title);
+        float width = Random.Range(1, 1.5f);
+        bookScript.SetScale(width, Random.Range(.66f, .9f));
+        bookScript.SetJacketColor(Color.HSVToRGB(Random.value, Random.Range(.2f, .5f), Random.Range(.2f, .75f)));
+        bookScript.isDead = true;
+    }
 
     void Update() {
         // Game logic.
@@ -144,6 +155,7 @@ public class GameScript : MonoBehaviour {
                 rightX -= shift;
                 Destroy(bookScripts[selected].gameObject);
                 Destroy(bookScripts[combineTarget].gameObject);
+                AddCombinedBook(combineUI.anagram, bookScripts[selected], bookScripts[combineTarget]);
                 bookScripts.RemoveAt(Mathf.Max(selected, combineTarget));
                 bookScripts.RemoveAt(Mathf.Min(selected, combineTarget));
                 while (bookScripts.Count < 2) {

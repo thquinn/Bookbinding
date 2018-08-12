@@ -17,6 +17,8 @@ public class BookScript : MonoBehaviour {
     bool ready;
     float xTweenStart, xTweenTime = 1, xTweenSpeed;
     bool zTweenFront;
+    public bool isDead = false;
+    float deadSpeed = 0, deadAccel = .025f;
 
     void Start () {
         ready = false;
@@ -26,6 +28,15 @@ public class BookScript : MonoBehaviour {
     }
 	
 	void Update () {
+        if (isDead) {
+            deadSpeed += deadAccel;
+            transform.Translate(0, 0, -deadSpeed);
+            if (transform.position.z < -100) {
+                Destroy(gameObject);
+            }
+            return;
+        }
+
         // Tilt.
         if (tilt >= GameScript.MAX_TILT) { // Drop the book; the game is over.
             tilt = Mathf.Min(90, tilt + 3);
@@ -36,7 +47,6 @@ public class BookScript : MonoBehaviour {
             float zRadians = zRot * Mathf.Deg2Rad;
             float zSin = Mathf.Sin(zRadians);
             float z2Sin = Mathf.Sin(zRadians * 2);
-            float zCos = Mathf.Cos(zRadians);
             float width = model.transform.localScale.x, height = model.transform.localScale.y * 8;
             float xOff = (height / 2 - width / 2) * zSin + (height / 20) * z2Sin;
             float yOff = (width / 2 - height / 2) * zSin + (height / 5) * z2Sin;
@@ -46,9 +56,6 @@ public class BookScript : MonoBehaviour {
         // Tween.
         if (xTweenTime < 1) {
             xTweenTime = Mathf.Min(1, xTweenTime + xTweenSpeed);
-            // DEBUG
-            //xTweenTime = 1;
-            // END DEBUG
             if (!ready && xTweenTime >= .9f) {
                 audioSource.PlayOneShot(thumpClips[Random.Range(0, thumpClips.Length)]);
                 ready = true;
