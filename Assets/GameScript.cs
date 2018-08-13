@@ -45,7 +45,7 @@ public class GameScript : MonoBehaviour {
         GameObject book = Instantiate(bookPrefab);
         book.transform.Translate(rightX, 0, 0);
         BookScript bookScript = book.GetComponent<BookScript>();
-        bookScript.SetTitle(dictionaryScript.RandomTitle(14 + booksSpawned / 2));
+        bookScript.SetTitle(dictionaryScript.RandomTitle(16 + booksSpawned / 2));
         bookScripts.Add(bookScript);
         float width = Random.Range(1, 1.5f);
         bookScript.SetScale(width, Random.Range(.66f, .9f));
@@ -70,32 +70,36 @@ public class GameScript : MonoBehaviour {
         if (gameOver && Input.GetButtonDown("Restart")) {
             fadeUIScript.fadeOut = true;
         }
-        if (!gameOver) {
-            if (rightX <= MAX_RIGHT_X) {
-                float timerSpeed = STARTING_SPEED * (1 + SPEED_MULTIPLIER * booksSpawned);
-                bookTimer += timerSpeed;
-                if (bookTimer >= 1) {
-                    bookTimer -= 1;
-                    AddBook(0);
-                    booksSpawned++;
-                }
-            }
-            if (rightX > MAX_RIGHT_X) {
-                tilt += TILT_SPEED;
-                bookScripts[bookScripts.Count - 1].tilt = tilt;
-                if (tilt >= MAX_TILT) {
-                    gameOver = true;
-                    combining = false;
-                }
-            }
-            else {
-                foreach (BookScript bs in bookScripts) {
-                    bs.tilt = 0;
-                }
-            }
-            if (!combining && Input.GetButtonDown("Submit") && rightX < MAX_RIGHT_X) {
+        if (gameOver) {
+            return;
+        }
+        if (rightX <= MAX_RIGHT_X) {
+            float timerSpeed = STARTING_SPEED * (1 + SPEED_MULTIPLIER * booksSpawned);
+            bookTimer += timerSpeed;
+            if (bookTimer >= 1) {
+                bookTimer -= 1;
                 AddBook(0);
+                booksSpawned++;
             }
+        }
+        if (rightX > MAX_RIGHT_X) {
+            tilt += TILT_SPEED;
+            for (int i = 0; i < bookScripts.Count - 1; i++) {
+                bookScripts[i].tilt = 0;
+            }
+            bookScripts[bookScripts.Count - 1].tilt = tilt;
+            if (tilt >= MAX_TILT) {
+                gameOver = true;
+                combining = false;
+            }
+        }
+        else {
+            foreach (BookScript bs in bookScripts) {
+                bs.tilt = 0;
+            }
+        }
+        if (!combining && Input.GetButtonDown("Submit") && rightX < MAX_RIGHT_X) {
+            AddBook(0);
         }
 
         // Swap mode.
@@ -109,11 +113,13 @@ public class GameScript : MonoBehaviour {
                     if (Input.GetButton("Swap")) {
                         SwapBooks(selected - 1, selected);
                         selected--;
-                    } else if (Input.GetButton("Combine")) {
+                    }
+                    else if (Input.GetButton("Combine")) {
                         combineTarget = selected - 1;
                         combining = true;
                         combineUI.SetBooks(bookScripts[selected], bookScripts[combineTarget]);
-                    } else {
+                    }
+                    else {
                         selected--;
                     }
                 }
@@ -124,7 +130,8 @@ public class GameScript : MonoBehaviour {
             }
             if (Input.GetButton("Home")) {
                 selected = 0;
-            } else if (Input.GetButton("End")) {
+            }
+            else if (Input.GetButton("End")) {
                 selected = bookScripts.Count - 1;
             }
             if (Input.GetAxisRaw("Horizontal") > 0) {
@@ -132,11 +139,13 @@ public class GameScript : MonoBehaviour {
                     if (Input.GetButton("Swap")) {
                         SwapBooks(selected, selected + 1);
                         selected++;
-                    } else if (Input.GetButton("Combine")) {
+                    }
+                    else if (Input.GetButton("Combine")) {
                         combineTarget = selected + 1;
                         combining = true;
                         combineUI.SetBooks(bookScripts[selected], bookScripts[combineTarget]);
-                    } else {
+                    }
+                    else {
                         selected++;
                     }
                 }
@@ -145,10 +154,12 @@ public class GameScript : MonoBehaviour {
             else {
                 rightLastFrame = false;
             }
-        } else { // Combine mode.
+        }
+        else { // Combine mode.
             if (Input.GetButtonDown("Cancel")) {
                 combining = false;
-            } else if (Input.GetButtonDown("Submit") && combineUI.isValid) {
+            }
+            else if (Input.GetButtonDown("Submit") && combineUI.isValid) {
                 float shift = bookScripts[selected].model.transform.localScale.x + bookScripts[combineTarget].model.transform.localScale.x;
                 for (int i = Mathf.Max(selected, combineTarget) + 1; i < bookScripts.Count; i++) {
                     bookScripts[i].Move(-shift, false);

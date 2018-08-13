@@ -8,7 +8,7 @@ using UnityEngine;
 public class BookScript : MonoBehaviour {
     public static TMP_FontAsset[] fonts;
     static HashSet<string> noAllCapsFontNames = new HashSet<string>() { "AlexBrush-Regular SDF", "Allura-Regular SDF", "Arizonia-Regular SDF", "DancingScript-Regular SDF", "GrandHotel-Regular SDF", "GreatVibes-Regular SDF", "JosephinSans-Regular SDF", "Lobster_1", "Pacifico SDF", "Sofia-Regular SDF", "Titilium-Regular SDF" };
-    static float TILT_TWEEN_SPEED = 0.5f;
+    static float TILT_TWEEN_SPEED = 0.25f;
     public GameObject tiltParent, tweenParent, model, textMesh;
     public AudioSource audioSource;
     public AudioClip[] swapClips, thumpClips;
